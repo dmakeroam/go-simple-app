@@ -91,3 +91,46 @@ jobs:
           image-ref: ${{ steps.ecr.outputs.registry }}/gitops-app@${{ steps.push.outputs.digest }}
           severity: 'CRITICAL,HIGH'
           exit-code: '1'          # fail the job on HIGH or CRITICAL
+  
+  deploy:
+    name: Update config repo
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout config repo
+        uses: actions/checkout@v4
+        with:
+          repository: dmakeroam/gitops-config
+          token: ${{ secrets.CONFIG_REPO_TOKEN }}
+          path: config
+
+      - name: Update image digest
+        working-directory: config
+        env:
+          DIGEST: ${{ needs.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          FILE=charts/gitops-app/values.yaml
+
+          # Rewrite exactly one line
+          sed -i "s|^  digest: .*|  digest: \"${DIGEST}\"|" "$FILE"
+
+          # Fail loudly if the substitution did not take
+          grep -q "digest: \"${DIGEST}\"" "$FILE" \
+            || { echo "digest not updated"; exit 1; }
+
+          git diff --stat
+
+      - name: Commit and push
+        working-directory: config
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add charts/gitops-app/values.yaml
+          git diff --staged --quiet && echo "no change" && exit 0
+          git commit -m "deploy: gitops-app ${{ github.sha }}
+
+          Source commit: ${{ github.sha }}
+          Image digest:  ${{ needs.build.outputs.digest }}"
+          git push
