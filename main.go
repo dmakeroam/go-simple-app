@@ -112,7 +112,7 @@ func (a *application) handleHello(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := helloResponse{
-		Message:   "hello",
+		Message:   "Hello from EKS/Hello from GitOps",
 		Version:   a.version,
 		Hostname:  a.hostname,
 		RequestID: requestIDFromContext(r.Context()),
