@@ -114,7 +114,7 @@ jobs:
           FILE=charts/gitops-app/values.yaml
 
           # Rewrite exactly one line
-          sed -i "s|^  digest: .*|  digest: \"${DIGEST}\"|" "$FILE"
+          sed -i "s|^      digest: .*|      digest: \"${DIGEST}\"|" "$FILE"
 
           # Fail loudly if the substitution did not take
           grep -q "digest: \"${DIGEST}\"" "$FILE" \
