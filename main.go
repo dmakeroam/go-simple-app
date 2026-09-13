@@ -338,7 +338,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	if err := run(logger); err != nil {
-		logger.Error("fatal", slog.Any("error", err))
+		logger.Error("error", slog.Any("error", err))
 		os.Exit(1)
 	}
 }
