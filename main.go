@@ -329,7 +329,7 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("server error after shutdown: %w", err)
 	}
 
-	logger.Info("server stopped gracefully")
+	logger.Info("server stopped")
 	return nil
 }
 
